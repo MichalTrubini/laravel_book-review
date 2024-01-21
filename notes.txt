@@ -1,0 +1,12 @@
+MODELS
+
+- create model for book and review
+- this will create migration files. Add data into these files pertaining to columns inside a table
+- run migration via php artisan migrate
+- if new stuff is added to migration files, run php artisan migrate:refresh (e.g. foreign key added)
+- define type of relationship inside book and review models (one to many "hasMany", one to one "belongsTo")
+
+FACTORY AND SEEDING
+
+- run method in DatabaseSeeder
+- specify how many books and reviews to seed

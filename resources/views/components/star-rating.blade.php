@@ -1,3 +1,8 @@
-<div>
-    <!-- The best way to take care of the future is to take care of the present moment. - Thich Nhat Hanh -->
-</div>
+@if($rating)
+    @for ($i = 1; $i <= 5; $i++)
+        {{$i <= $rating ? '★' : '☆'}} 
+    @endfor
+
+    @else
+        No rating yet
+@endif

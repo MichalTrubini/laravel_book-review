@@ -10,7 +10,6 @@ class Book extends Model
 {
     use HasFactory;
 
-
     protected $fillable = [
         'review',
         'rating',
@@ -27,35 +26,29 @@ class Book extends Model
         return $query->where('title', 'like', '%' . $title . '%');
     }
 
-    public function scopePopular(Builder $query, $from = null, $to = null): Builder
+    public function scopeWithReviewsCount(Builder $query, $from = null, $to = null): Builder
     {
-
-        return $query->withCount(['reviews' => function (Builder $q) use ($from, $to) {
-        
-            if ($from && !$to) {
-                $q->where('created_at', '>=', $from);
-            }
-            elseif ($to && !$from) {
-                $q->where('created_at', '<=', $to);
-            }
-            elseif ($from && $to) {
-                $q->whereBetween('created_at', [$from, $to]);
-            }
-        
-        }])->orderBy('reviews_count', 'desc');
+        return $query->withCount(['reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)]);
     }
 
+    public function scopeWithAvgRating(Builder $query, $from = null, $to = null): Builder
+    {
+        return $query->withAvg(['reviews' => fn (Builder $q) => $this->dateRangeFilter($q, $from, $to)], 'rating');
+    }
+
+    public function scopePopular(Builder $query, $from = null, $to = null): Builder
+    {
+        return $query->withReviewsCount()->orderBy('reviews_count', 'desc');
+    }
 
     public function scopeMinReviews(Builder $query, int $minReviews): Builder
     {
-
         return $query->having('reviews_count', '>=', $minReviews);
     }
 
-    public function scopeHighestRated(Builder $query): Builder
+    public function scopeHighestRated(Builder $query, $from = null, $to = null): Builder
     {
-
-        return $query->withAvg('reviews', 'rating')->orderBy('reviews_avg_rating', 'desc');
+        return $query->withAvgRating()->orderBy('reviews_avg_rating', 'desc');
     }
 
     public function scopePopularLastMonth(Builder $query): Builder
@@ -84,5 +77,16 @@ class Book extends Model
         return $query->highestRated(now()->subMonths(6), now())
             ->popular(now()->subMonths(6), now())
             ->minReviews(5);
+    }
+
+    private function dateRangeFilter(Builder $query, $from = null, $to = null)
+    {
+        if ($from && !$to) {
+            $query->where('created_at', '>=', $from);
+        } elseif ($to && !$from) {
+            $query->where('created_at', '<=', $to);
+        } elseif ($from && $to) {
+            $query->whereBetween('created_at', [$from, $to]);
+        }
     }
 }

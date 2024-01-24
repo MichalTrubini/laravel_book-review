@@ -10,3 +10,8 @@ FACTORY AND SEEDING
 
 - run method in DatabaseSeeder
 - specify how many books and reviews to seed
+
+QUERY BUILDER
+
+- we build queries in book model
+- each query has its own function
